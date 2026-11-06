@@ -27,7 +27,7 @@ import { appendFileSync } from 'node:fs'
 import { Sandbox } from 'ppio-sandbox'
 import { Kimi, KimiAPIError, sessionWorkToken } from '../kimi.js'
 import type { WorkItem } from '../kimi.js'
-import { KIMI_BASE_URL } from '../config.js'
+import { KIMI_BASE_URL, PPIO_DOMAIN } from '../config.js'
 import {
   CONTROLLER_LOG,
   CONTROLLER_PORT,
@@ -372,9 +372,9 @@ server.listen(port, () => {
     workerId: WORKER_ID,
     agentId: AGENT_ID || null,
     // Which PPIO region the worker sandboxes will be created in. A reconcile
-    // that fails with `invalid token` while this says the default domain means
-    // deploy did not forward PPIO_DOMAIN.
-    ppioDomain: process.env.PPIO_DOMAIN || '(sdk default)',
+    // that fails with `invalid token` while this names a region the key does
+    // not belong to means the deploying shell had a different PPIO_DOMAIN.
+    ppioDomain: PPIO_DOMAIN,
   })
   void pollForever()
 })

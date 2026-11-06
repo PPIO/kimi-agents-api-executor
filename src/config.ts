@@ -9,6 +9,21 @@ import { config as loadEnv } from 'dotenv'
 loadEnv({ override: true })
 
 /**
+ * PPIO region the sandboxes live in.
+ *
+ * The SDK reads `PPIO_DOMAIN` from the environment at call time and derives
+ * its API endpoint from it; an API key is only valid against its own region.
+ * The SDK's own fallback is `sandbox.ppio.cn`, which is not where this
+ * project's keys live, so default to Beijing here and write it back into the
+ * environment so the SDK sees the same value every caller does. This runs
+ * before any SDK import is evaluated: `config.ts` has no SDK dependency, and
+ * the SDK consults the environment lazily on each call.
+ */
+export const PPIO_DOMAIN =
+  process.env.PPIO_DOMAIN || 'cn-beijing-1.sandbox.ppio.com'
+process.env.PPIO_DOMAIN = PPIO_DOMAIN
+
+/**
  * kha CLI version baked into the template.
  *
  * Pinned deliberately: the install script resolves `stable.txt` at build time,

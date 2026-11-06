@@ -31,7 +31,7 @@ npm install
 | Variable | Where it comes from | Scope |
 | --- | --- | --- |
 | `PPIO_API_KEY` | PPIO console | template build, controller and worker sandboxes |
-| `PPIO_DOMAIN` | PPIO console, if your key is not on the default region | optional; forwarded to the controller, which creates worker sandboxes with the same SDK |
+| `PPIO_DOMAIN` | PPIO console, if your key is not in the Beijing region | optional; defaults to `cn-beijing-1.sandbox.ppio.com`; forwarded to the controller, which creates worker sandboxes with the same SDK |
 | `KIMI_API_KEY` | [platform.kimi.com](https://platform.kimi.com) API keys | client and controller; **never** enters a worker |
 | `KIMI_ENVIRONMENT_ID` | `npm run webhook:client -- --create-environment <name>` | the self-hosted environment every session binds to and the controller polls |
 | `KIMI_ENVIRONMENT_KEY` | console → the environment's **Worker** tab | controller only; the only credential that may poll the queue |
@@ -252,7 +252,7 @@ the path to its session token therefore travel with `kha worker run` in
 | `claim_resolved` on every item | The lease was reclaimed before reconcile. Another poller on the same environment, or `LEASE_TTL_MS` too short. |
 | `session.error` | Read the worker log. Tool failures surface there, not in the HTTP status. |
 | `reconcile_failed` with `auth user unauthorized: invalid token` after a successful `enqueued` | The controller is talking to the wrong PPIO region: `PPIO_DOMAIN` is set in your shell but the deployed controller did not get it. Check `ppioDomain` in the `controller_listening` log line, then redeploy. The claim was acked and is lost until the lease lapses. |
-| Every SDK call fails with 503 and an HTML body | `PPIO_DOMAIN` set to a region the SDK does not recognize. Leave it unset. |
+| Every SDK call fails with 503 and an HTML body | `PPIO_DOMAIN` set to a region the SDK does not recognize. Unset it to fall back to `cn-beijing-1.sandbox.ppio.com`. |
 | Agent reports success but files are missing | Assert against the sandbox filesystem, not the final response. |
 | `ppio-sandbox-cli sandbox exec` hangs with no output | Non-interactive stdin is treated as piped input and waited on. Add `</dev/null` to every `exec` in a script. |
 

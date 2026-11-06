@@ -10,7 +10,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { Sandbox } from 'ppio-sandbox'
-import { KIMI_BASE_URL, optionalEnv, requireEnv } from '../config.js'
+import { KIMI_BASE_URL, PPIO_DOMAIN, optionalEnv, requireEnv } from '../config.js'
 import {
   CONTROLLER_LOG,
   CONTROLLER_STDIO,
@@ -35,21 +35,16 @@ const agentId = process.env.KIMI_AGENT_ID || ''
  * `PPIO_DOMAIN` is the one that bites: the SDK derives the API endpoint from
  * it, and an API key is only valid against its own region. Measured: a
  * controller deployed from a shell with `PPIO_DOMAIN` set, but without the
- * variable forwarded, fell back to the default domain and failed every
- * reconcile with `auth user unauthorized: invalid token` — after the Kimi
- * claim and ack had already succeeded, so the work item was held and lost.
- * Optional variables are forwarded only when set, so the SDK's own defaults
- * apply otherwise.
+ * variable forwarded, fell back to the SDK's own default domain and failed
+ * every reconcile with `auth user unauthorized: invalid token` — after the
+ * Kimi claim and ack had already succeeded, so the work item was held and
+ * lost. It is always passed now (config.ts resolves the default); the other
+ * optional variables are forwarded only when set.
  */
-// Every PPIO_* variable the SDK reads from the environment, except the two
-// credentials: PPIO_API_KEY is passed explicitly above, and PPIO_ACCESS_TOKEN
-// is a CLI login token that must not reach a sandbox.
-const PPIO_ENV_PASSTHROUGH = [
-  'PPIO_DOMAIN',
-  'PPIO_API_URL',
-  'PPIO_SANDBOX_URL',
-  'PPIO_DEBUG',
-] as const
+// Every other PPIO_* variable the SDK reads from the environment, except the
+// two credentials: PPIO_API_KEY is passed explicitly below, and
+// PPIO_ACCESS_TOKEN is a CLI login token that must not reach a sandbox.
+const PPIO_ENV_PASSTHROUGH = ['PPIO_API_URL', 'PPIO_SANDBOX_URL', 'PPIO_DEBUG'] as const
 const ppioEnvs: Record<string, string> = Object.fromEntries(
   PPIO_ENV_PASSTHROUGH.flatMap((name) => {
     const value = optionalEnv(name)
@@ -163,6 +158,7 @@ await sandbox.commands.run(
       KIMI_AGENT_ID: agentId,
       KIMI_BASE_URL,
       PPIO_API_KEY: requireEnv('PPIO_API_KEY'),
+      PPIO_DOMAIN,
       ...ppioEnvs,
     },
   }
